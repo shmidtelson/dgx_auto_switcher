@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.7
 import re
 import os
 import subprocess
@@ -10,10 +11,10 @@ class ChangeAudioInput():
     def __init__(self):
         while True:
             boolean = self.getStatus()
-            print(boolean)
             if boolean != self.headphones_connected:
                 self.getChannelNumber()
                 self.changeHeadphones()
+                self.show_notify()
                 self.headphones_connected = boolean
 
     def getChannelNumber(self):
@@ -27,7 +28,6 @@ class ChangeAudioInput():
         bytes = os.popen('cat /proc/asound/card0/oxygen').read()
         search = re.findall("a0: (.*)", bytes)
         splited = search[0].split()[6]
-        print(splited)
         if splited in ['68', 'e8']:
             return True
         if splited in ['78', 'f8']:
@@ -35,8 +35,14 @@ class ChangeAudioInput():
 
     def changeHeadphones(self):
         status = '0' if self.headphones_connected else '1'
-        os.system(f"amixer -c {self.channelNumber} cset name='Analog Output Playback Enum' {status}")
-        subprocess.call(['notify-send', 'Наушники подключены'])
+        os.popen(f"amixer -c {self.channelNumber} cset name='Analog Output Playback Enum' {status}")
 
-a = ChangeAudioInput()
+    def show_notify(self):
+        if not self.headphones_connected:
+            subprocess.call(['notify-send', 'Headphones connected'])
+        else:
+            subprocess.call(['notify-send', 'Headphones disconnected'])
+
+if __name__ == '__main__':
+    ChangeAudioInput()
 
