@@ -25,7 +25,7 @@ class ChangeAudioInput():
         self.channelNumber = re.findall(pattern, devices)[0]
 
     def getStatus(self):
-        bytes = os.popen(f'cat /proc/asound/card{channelNumber}/oxygen').read()
+        bytes = os.popen(f'cat /proc/asound/card{self.channelNumber}/oxygen').read()
         search = re.findall("a0: (.*)", bytes)
         splited = search[0].split()[6]
         if splited in ['68', 'e8']:
