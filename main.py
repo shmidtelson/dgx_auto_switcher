@@ -6,16 +6,16 @@ import subprocess
 
 class ChangeAudioInput():
     headphones_connected = None
-    channelNumber = 1
+    channelNumber = None
 
     def __init__(self):
+        self.getChannelNumber()
         while True:
-            boolean = self.getStatus()
-            if boolean != self.headphones_connected:
-                self.getChannelNumber()
+            is_connected = self.getStatus()
+            if is_connected != self.headphones_connected:
                 self.changeHeadphones()
                 self.show_notify()
-                self.headphones_connected = boolean
+                self.headphones_connected = is_connected
 
     def getChannelNumber(self):
         pattern = "(\d) \[DGX"
@@ -25,7 +25,7 @@ class ChangeAudioInput():
         self.channelNumber = re.findall(pattern, devices)[0]
 
     def getStatus(self):
-        bytes = os.popen('cat /proc/asound/card0/oxygen').read()
+        bytes = os.popen(f'cat /proc/asound/card{channelNumber}/oxygen').read()
         search = re.findall("a0: (.*)", bytes)
         splited = search[0].split()[6]
         if splited in ['68', 'e8']:
