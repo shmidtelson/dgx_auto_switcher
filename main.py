@@ -5,17 +5,17 @@ import subprocess
 
 
 class ChangeAudioInput():
-    headphones_connected = None
+    prevStatus = None
     channelNumber = None
-
+    is_connected = None
     def __init__(self):
         self.getChannelNumber()
         while True:
-            is_connected = self.getStatus()
-            if is_connected != self.headphones_connected:
+            self.is_connected = self.getStatus()
+            if self.is_connected != self.prevStatus or self.prevStatus == None:
                 self.changeHeadphones()
                 self.show_notify()
-                self.headphones_connected = is_connected
+                self.prevStatus = self.is_connected
 
     def getChannelNumber(self):
         pattern = "(\d) \[DGX"
@@ -34,11 +34,11 @@ class ChangeAudioInput():
             return False
 
     def changeHeadphones(self):
-        status = '0' if self.headphones_connected else '1'
+        status = '1' if self.is_connected else '0'
         os.popen(f"amixer -c {self.channelNumber} cset name='Analog Output Playback Enum' {status}")
 
     def show_notify(self):
-        if not self.headphones_connected:
+        if self.is_connected:
             subprocess.call(['notify-send', 'Headphones connected'])
         else:
             subprocess.call(['notify-send', 'Headphones disconnected'])
