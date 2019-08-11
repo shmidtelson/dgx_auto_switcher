@@ -8,6 +8,7 @@ User=romua1d
 WorkingDirectory=/opt/dgx_auto_switcher
 ExecStart=/opt/dgx_auto_switcher/main.py
 Restart=always
+StandardInput=tty-force
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
