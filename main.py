@@ -2,7 +2,7 @@
 import re
 import os
 import subprocess
-
+import time
 
 class ChangeAudioInput():
     prevStatus = None
@@ -15,8 +15,8 @@ class ChangeAudioInput():
             self.is_connected = self.get_status()
             if self.is_connected != self.prevStatus or self.prevStatus is None:
                 self.change_headphones()
-                self.show_notify()
                 self.prevStatus = self.is_connected
+            time.sleep(1)
 
     def get_channel_number(self):
         pattern = "(\d) \[DGX"
@@ -38,14 +38,7 @@ class ChangeAudioInput():
         status = '1' if self.is_connected else '0'
         os.popen(f"amixer -c {self.channelNumber} cset name='Analog Output Playback Enum' {status}")
 
-    def show_notify(self):
-        msg = 'Headphones connected' if self.is_connected else'Headphones disconnected'
-        self._notify(msg)
-
-    @staticmethod
-    def _notify(text):
-        subprocess.call(['notify-send', text])
-
 if __name__ == '__main__':
     ChangeAudioInput()
+
 
