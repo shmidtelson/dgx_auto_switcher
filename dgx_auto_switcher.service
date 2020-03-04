@@ -1,6 +1,6 @@
 [Unit]
 Description=DGX autoswitcher
-After=multi-user.target
+After=sound.target
 
 [Service]
 Type=simple
