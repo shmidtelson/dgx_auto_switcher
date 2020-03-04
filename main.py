@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 import re
 import os
 import subprocess
@@ -10,7 +10,13 @@ class ChangeAudioInput():
     is_connected = None
 
     def __init__(self):
-        self.get_channel_number()
+        while True:
+            try:
+                self.get_channel_number()
+                break
+            except:
+                time.sleep(5)
+
         while True:
             self.is_connected = self.get_status()
             if self.is_connected != self.prevStatus or self.prevStatus is None:
