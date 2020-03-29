@@ -1,50 +1,65 @@
 #!/usr/bin/env python3
 import re
 import os
-import subprocess
 import time
 
+
 class ChangeAudioInput():
-    prevStatus = None
+    HEADPHONES_FRONT_DISCONNECTED = '0'
+    HEADPHONES_FRONT_CONNECTED = '1'
+    HEADPHONES_MULTICHANNEL = '2'
+
+    pathToDGXCard = '/proc/asound/DGX'
     channelNumber = None
-    is_connected = None
+    currentHeadphonesStatus = None
 
-    def __init__(self):
-        while True:
-            try:
-                self.get_channel_number()
-                break
-            except:
-                time.sleep(5)
+    def start(self):
+        self.loop()
+
+    def loop(self):
+        # We wait symlink
+        while not os.path.islink(self.pathToDGXCard):
+            time.sleep(2)
+
+        self.getChannelNumber()
+
+        time.sleep(20)
 
         while True:
-            self.is_connected = self.get_status()
-            if self.is_connected != self.prevStatus or self.prevStatus is None:
-                self.change_headphones()
-                self.prevStatus = self.is_connected
+            status = self.getStatus()
+
+            if self.currentHeadphonesStatus is None:
+                self.changeHeadphones(status)
+
+            if self.currentHeadphonesStatus != status:
+                self.changeHeadphones(status)
+
             time.sleep(1)
 
-    def get_channel_number(self):
-        pattern = "(\d) \[DGX"
-        devices = os.popen('cat /proc/asound/cards').read()
-        search = re.findall(pattern, devices)
-        assert 1 == len(search)
-        self.channelNumber = re.findall(pattern, devices)[0]
+    def getChannelNumber(self):
+        self.channelNumber = re.findall("card(\d+)", os.popen(f"ls -ld {self.pathToDGXCard}").read())[0]
 
-    def get_status(self):
-        card_bytes = os.popen(f'cat /proc/asound/card{self.channelNumber}/oxygen').read()
-        search = re.findall("a0: (.*)", card_bytes)
+    def getStatus(self):
+        cardBytes = os.popen(f'cat /proc/asound/card{self.channelNumber}/oxygen').read()
+        search = re.findall("a0: (.*)", cardBytes)
         splitted = search[0].split()[6]
-        if splitted in ['68', 'e8']:
-            return True
-        if splitted in ['78', 'f8']:
-            return False
 
-    def change_headphones(self):
-        status = '1' if self.is_connected else '0'
+        if splitted in ['68', 'e8']:
+            return self.HEADPHONES_FRONT_CONNECTED
+
+        if splitted in ['78', 'f8']:
+            return self.HEADPHONES_FRONT_DISCONNECTED
+
+        return self.HEADPHONES_MULTICHANNEL
+
+    def changeHeadphones(self, status):
         os.popen(f"amixer -c {self.channelNumber} cset name='Analog Output Playback Enum' {status}")
 
+        self.currentHeadphonesStatus = status
+
+
 if __name__ == '__main__':
-    ChangeAudioInput()
-
-
+    try:
+        ChangeAudioInput().start()
+    except KeyboardInterrupt:
+        print('Exited by user')
