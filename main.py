@@ -40,9 +40,7 @@ class ChangeAudioInput():
         self.channelNumber = re.findall("card(\d+)", os.popen(f"ls -ld {self.pathToDGXCard}").read())[0]
 
     def getStatus(self):
-        cardBytes = os.popen(f'cat /proc/asound/card{self.channelNumber}/oxygen').read()
-        search = re.findall("a0: (.*)", cardBytes)
-        splitted = search[0].split()[6]
+        splitted = self.getStatusCode()
 
         if splitted in ['68', 'e8']:
             return self.HEADPHONES_FRONT_CONNECTED
@@ -57,6 +55,12 @@ class ChangeAudioInput():
 
         self.currentHeadphonesStatus = status
 
+    def getStatusCode(self):
+        cardBytes = os.popen(f'cat /proc/asound/card{self.channelNumber}/oxygen').read()
+        search = re.findall("a0: (.*)", cardBytes)
+        splitted = search[0].split()[6]
+
+        return splitted
 
 if __name__ == '__main__':
     try:
