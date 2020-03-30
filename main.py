@@ -21,9 +21,9 @@ class ChangeAudioInput():
         while not os.path.islink(self.pathToDGXCard):
             time.sleep(2)
 
-        self.getChannelNumber()
+        time.sleep(7)
 
-        time.sleep(20)
+        self.getChannelNumber()
 
         while True:
             status = self.getStatus()
